@@ -1,0 +1,33 @@
+name: watch-dou
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: watch-dou
+  cancel-in-progress: false
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check DOU
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          EXTRA_REGIONS: ${{ vars.EXTRA_REGIONS }}
+          UIUX_EXTRA_PAGES: ${{ vars.UIUX_EXTRA_PAGES }}
+        run: python watch_dou.py
+      - name: Save state
+        if: always()
+        run: |
+          git config user.name "dou-watch"
+          git config user.email "dou-watch@users.noreply.github.com"
+          git add seen.json
+          git diff --cached --quiet || (git commit -m "state" && git pull --rebase -q && git push)
