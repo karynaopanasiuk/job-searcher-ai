@@ -87,7 +87,7 @@ def get_existing_urls() -> set:
         return set()
     with open(MD_FILE, "r", encoding="utf-8") as f:
         content = f.read()
-    urls = set(re.findall(r'\((https?://[^)]+)\)', content))
+    urls = set(re.findall(r'\((https?://\S+?)\)(?=\s|$)', content))
     # Low-scored vacancies are analyzed but not written to the md file; count them as
     # known too, otherwise they get re-fetched and re-scored on every scheduled run.
     if os.path.exists(ANALYSES_FILE):
