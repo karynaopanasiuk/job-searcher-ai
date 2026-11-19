@@ -82,6 +82,15 @@ def fetch_html(url: str) -> str:
         return ""
 
 
+def get_existing_titles() -> set:
+    """Titles already in the vacancy list. Some boards post one copy of the same job per country
+    (different link, same title), and those should count as one vacancy."""
+    if not os.path.exists(MD_FILE):
+        return set()
+    with open(MD_FILE, "r", encoding="utf-8") as f:
+        return {m.group(1).strip().lower() for m in re.finditer(r"^- \[(.+?)\]\(", f.read(), re.M)}
+
+
 def get_existing_urls() -> set:
     if not os.path.exists(MD_FILE):
         return set()
@@ -599,6 +608,7 @@ def check_workable():
     pages = cfg.get("pages", 2)
     max_age = cfg.get("max_age_days", 30)
     existing = get_existing_urls()
+    known_titles = get_existing_titles()
     results, seen = [], set()
     for term in searches:
         token = ""
@@ -616,8 +626,12 @@ def check_workable():
                 created = _parse_dt(j.get("created"))
                 if created and (datetime.now() - created).days > max_age:
                     continue
-                seen.add(url)
                 company = _plain((j.get("company") or {}).get("title"))
+                ident = (f"{title} — {company}" if company else title).lower()
+                if ident in known_titles:     # same job, another country's copy
+                    continue
+                known_titles.add(ident)
+                seen.add(url)
                 locs = ", ".join(x for x in (j.get("locations") or []) if x != "TELECOMMUTE")
                 loc = locs or (j.get("location") or {}).get("countryName") or ""
                 desc = _plain(" ".join([j.get("description") or "", j.get("requirementsSection") or ""]))
