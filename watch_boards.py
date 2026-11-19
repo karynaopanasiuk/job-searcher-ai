@@ -80,12 +80,6 @@ def main():
     now = int(time.time())
     to_send = []
     for url, v in sorted(uniq.items(), key=lambda kv: kv[1].get("posted") or cn.datetime.min):
-        tkey = f"t:{v['section']}|{v['title'].strip().lower()}"
-        if tkey in _seen:        # same job posted again under another link (e.g. one per country)
-            print(f"duplicate [{v['section']}] {v['title']}")
-            _seen[url] = now
-            continue
-        _seen[tkey] = now
         if criteria.too_old(v.get("posted")):
             print(f"too old [{v['section']}] {v['title']}")
             _seen[url] = now
