@@ -161,7 +161,7 @@ SOURCES = {
         "min_interval_hours": 0,
     },
     # --- added for the six-rules setup; every check is a plain HTTP request ---
-    "Workable": {"enabled": True, "pages": 2, "max_age_days": 30, "min_interval_hours": 0},
+    "Workable": {"enabled": True, "pages": 2, "max_age_days": 7, "min_interval_hours": 0},
     "Layers": {"enabled": True, "min_interval_hours": 0},
     "TechTree": {"enabled": True, "url": "https://jobs.techtree.dev/?tp=67a38f89-bc11-4237-a6f8-cbcb6c74463d",
                  "min_interval_hours": 0},

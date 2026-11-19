@@ -16,6 +16,7 @@ evaluate() returns (True, "") or (False, "short reason").
 
 import os
 import re
+from datetime import datetime
 
 # Extra regions (comma-separated, e.g. a country) that count as open to the candidate.
 # Kept out of the code on purpose: set the EXTRA_REGIONS environment variable instead.
@@ -28,6 +29,20 @@ def mask(text: str) -> str:
     for x in _EXTRA:
         text = re.sub(re.escape(x), "x", text, flags=re.I)
     return text
+
+# A vacancy first seen by a checker but posted more than this many days ago is not sent or listed.
+MAX_AGE_DAYS = 7
+
+
+def too_old(posted) -> bool:
+    """posted: the date the source gave for the vacancy (datetime) or None when unknown."""
+    if not posted:
+        return False
+    try:
+        return (datetime.now() - posted).days > MAX_AGE_DAYS
+    except TypeError:   # timezone-aware date: compare in UTC
+        return (datetime.now(posted.tzinfo) - posted).days > MAX_AGE_DAYS
+
 
 # --- 2. titles -----------------------------------------------------------
 _SEP = r"\s*(?:/|-|&|and|\+|\s)\s*"

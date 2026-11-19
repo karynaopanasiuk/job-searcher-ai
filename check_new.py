@@ -1028,6 +1028,14 @@ def main():
             json.dump(stored, f, ensure_ascii=False, indent=2)
     all_new = passed
 
+    # Drop vacancies the source says were posted long ago (criteria.MAX_AGE_DAYS)
+    stale = [v for v in all_new if criteria.too_old(v.get("posted"))]
+    if stale:
+        log(f"Skipping {len(stale)} vacancies older than {criteria.MAX_AGE_DAYS} days")
+        for v in stale:
+            skip(v["url"])
+        all_new = [v for v in all_new if v not in stale]
+
     # Round-robin across sources so the per-run cap can't be eaten by whichever source
     # happens to come first (otherwise the foreign boards starve behind the Ukrainian ones).
     by_section = {}

@@ -80,6 +80,10 @@ def main():
     now = int(time.time())
     to_send = []
     for url, v in sorted(uniq.items(), key=lambda kv: kv[1].get("posted") or cn.datetime.min):
+        if criteria.too_old(v.get("posted")):
+            print(f"too old [{v['section']}] {v['title']}")
+            _seen[url] = now
+            continue
         ok, why = criteria.evaluate(v["title"], v.get("text") or "", v.get("location", ""), v.get("remote_hint"))
         if not ok:
             print(f"rejected [{v['section']}] {v['title']} — {why}")
